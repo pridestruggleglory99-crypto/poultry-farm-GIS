@@ -1,6 +1,7 @@
 FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
+    curl \
     git \
     unzip \
     zip \
@@ -10,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+RUN apt-get install -y nodejs
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd zip pdo pdo_sqlite
@@ -22,8 +26,7 @@ COPY . .
 
 RUN composer install --no-interaction --optimize-autoloader
 
-RUN touch database/database.sqlite
+RUN npm install
+RUN npm run build
 
-EXPOSE 8080
-
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD php artisan serve --host=0.0.0.0 --port=$PORT
