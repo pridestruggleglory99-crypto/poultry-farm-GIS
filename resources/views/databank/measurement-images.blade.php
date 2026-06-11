@@ -11,8 +11,7 @@
 
     <title>Measurement Images</title>
 
-    @vite('resources/css/app.css')
-
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- FONT AWESOME -->
     <link
         rel="stylesheet"
