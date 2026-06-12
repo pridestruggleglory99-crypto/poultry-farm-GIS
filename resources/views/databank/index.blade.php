@@ -21,6 +21,8 @@
 
 </head>
 
+<x-back-to-top/>
+
 <body class="bg-gray-100 min-h-screen overflow-x-hidden">
 
     <!-- =======================================
@@ -336,338 +338,456 @@
 
     </section>
 
-    <!-- =======================================
-    STATS
-    ======================================== -->
+   <!-- =======================================
+STATS
+======================================== -->
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
+<section class="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
+
+```
+<!-- TITLE -->
+<div class="mb-4">
+
+    <h2 class="text-xl sm:text-2xl font-black text-gray-800">
+        Database Statistics
+    </h2>
+
+    <p class="text-sm text-gray-500 mt-1">
+        Overview of poultry GIS database information
+    </p>
+
+</div>
+
+<div class="
+    grid
+    grid-cols-2
+    lg:grid-cols-4
+    gap-3
+">
+
+    <!-- TOTAL FARMS -->
+    <div class="
+        bg-white
+        rounded-2xl
+        p-4 sm:p-5
+        border border-gray-200
+        shadow-sm
+    ">
 
         <div class="
-            grid
-            grid-cols-2
-            lg:grid-cols-3
-            gap-3
+            flex
+            items-center
+            justify-between
+            gap-4
         ">
 
-            <!-- CARD -->
-            <div class="
-                bg-white
-                rounded-2xl
-                p-4 sm:p-5
-                border border-gray-200
-                shadow-sm
-            ">
+            <div>
 
-                <div class="
-                    flex
-                    flex-col
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    gap-4
+                <p class="text-gray-500 text-xs sm:text-sm">
+                    Total Farms
+                </p>
+
+                <h3 class="
+                    text-2xl
+                    sm:text-3xl
+                    font-black
+                    text-gray-800
+                    mt-2
                 ">
-
-                    <div>
-
-                        <p class="text-gray-500 text-xs sm:text-sm">
-                            Total Farms
-                        </p>
-
-                        <h3 class="
-                            text-2xl
-                            sm:text-3xl
-                            font-black
-                            text-gray-800
-                            mt-2
-                        ">
-                            {{ $farmsCount ?? 0 }}
-                        </h3>
-
-                    </div>
-
-                    <div class="
-                        w-12 h-12
-                        sm:w-14 sm:h-14
-                        rounded-2xl
-                        bg-blue-100
-                        text-blue-600
-                        flex items-center justify-center
-                        text-xl sm:text-2xl
-                    ">
-                        <i class="fa-solid fa-warehouse"></i>
-                    </div>
-
-                </div>
+                    {{ $farmsCount ?? 0 }}
+                </h3>
 
             </div>
 
-            <!-- CARD -->
             <div class="
-                bg-white
+                w-12 h-12
                 rounded-2xl
-                p-4 sm:p-5
-                border border-gray-200
-                shadow-sm
+                bg-blue-100
+                text-blue-600
+                flex items-center justify-center
+                text-xl
             ">
-
-                <div class="
-                    flex
-                    flex-col
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    gap-4
-                ">
-
-                    <div>
-
-                        <p class="text-gray-500 text-xs sm:text-sm">
-                            Original Images
-                        </p>
-
-                        <h3 class="
-                            text-2xl
-                            sm:text-3xl
-                            font-black
-                            text-gray-800
-                            mt-2
-                        ">
-                            {{ $originalCount ?? 0 }}
-                        </h3>
-
-                    </div>
-
-                    <div class="
-                        w-12 h-12
-                        sm:w-14 sm:h-14
-                        rounded-2xl
-                        bg-green-100
-                        text-green-600
-                        flex items-center justify-center
-                        text-xl sm:text-2xl
-                    ">
-                        <i class="fa-solid fa-image"></i>
-                    </div>
-
-                </div>
-
+                <i class="fa-solid fa-warehouse"></i>
             </div>
-
-            <!-- CARD -->
-            <div class="
-                bg-white
-                rounded-2xl
-                p-4 sm:p-5
-                border border-gray-200
-                shadow-sm
-            ">
-
-                <div class="
-                    flex
-                    flex-col
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    gap-4
-                ">
-
-                    <div>
-
-                        <p class="text-gray-500 text-xs sm:text-sm">
-                            Measurements
-                        </p>
-
-                        <h3 class="
-                            text-2xl
-                            sm:text-3xl
-                            font-black
-                            text-gray-800
-                            mt-2
-                        ">
-                            {{ $measurementCount ?? 0 }}
-                        </h3>
-
-                    </div>
-
-                    <div class="
-                        w-12 h-12
-                        sm:w-14 sm:h-14
-                        rounded-2xl
-                        bg-red-100
-                        text-red-600
-                        flex items-center justify-center
-                        text-xl sm:text-2xl
-                    ">
-                        <i class="fa-solid fa-ruler-combined"></i>
-                    </div>
-
-                </div>
-
-            </div>
-
-        
 
         </div>
 
-    </section>
+    </div>
 
-    <!-- =======================================
-    MENU
-    ======================================== -->
-
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <!-- ORIGINAL IMAGES -->
+    <div class="
+        bg-white
+        rounded-2xl
+        p-4 sm:p-5
+        border border-gray-200
+        shadow-sm
+    ">
 
         <div class="
-            grid
-            md:grid-cols-2
-            xl:grid-cols-3
-            gap-6
+            flex
+            items-center
+            justify-between
+            gap-4
         ">
 
-            <!-- CARD -->
-            <a
-                href="{{ route('databank.farms') }}"
-                class="
-                    group
-                    bg-white
-                    rounded-3xl
-                    p-6 sm:p-7
-                    border border-gray-200
-                    shadow-sm
-                    hover:shadow-xl
-                    hover:-translate-y-1
-                    transition
-                "
-            >
+            <div>
 
-                <div class="
-                    w-16 h-16
-                    rounded-2xl
-                    bg-blue-100
-                    text-blue-600
-                    flex items-center justify-center
-                    text-3xl
-                ">
-                    <i class="fa-solid fa-database"></i>
-                </div>
-
-                <h3 class="
-                    text-2xl
-                    font-black
-                    text-gray-800
-                    mt-6
-                ">
-                    Farm Data
-                </h3>
-
-                <p class="
-                    text-gray-500
-                    mt-3
-                    leading-relaxed
-                    text-sm sm:text-base
-                ">
-                    View and download poultry farm datasets.
-                </p>
-
-            </a>
-
-            <!-- CARD -->
-            <a
-                href="{{ route('databank.original') }}"
-                class="
-                    group
-                    bg-white
-                    rounded-3xl
-                    p-6 sm:p-7
-                    border border-gray-200
-                    shadow-sm
-                    hover:shadow-xl
-                    hover:-translate-y-1
-                    transition
-                "
-            >
-
-                <div class="
-                    w-16 h-16
-                    rounded-2xl
-                    bg-green-100
-                    text-green-600
-                    flex items-center justify-center
-                    text-3xl
-                ">
-                    <i class="fa-solid fa-image"></i>
-                </div>
-
-                <h3 class="
-                    text-2xl
-                    font-black
-                    text-gray-800
-                    mt-6
-                ">
+                <p class="text-gray-500 text-xs sm:text-sm">
                     Original Images
-                </h3>
-
-                <p class="
-                    text-gray-500
-                    mt-3
-                    leading-relaxed
-                    text-sm sm:text-base
-                ">
-                    Access raw satellite screenshots before AI processing.
                 </p>
-
-            </a>
-
-            <!-- CARD -->
-            <a
-                href="{{ route('databank.measurement') }}"
-                class="
-                    group
-                    bg-white
-                    rounded-3xl
-                    p-6 sm:p-7
-                    border border-gray-200
-                    shadow-sm
-                    hover:shadow-xl
-                    hover:-translate-y-1
-                    transition
-                "
-            >
-
-                <div class="
-                    w-16 h-16
-                    rounded-2xl
-                    bg-red-100
-                    text-red-600
-                    flex items-center justify-center
-                    text-3xl
-                ">
-                    <i class="fa-solid fa-ruler-combined"></i>
-                </div>
 
                 <h3 class="
                     text-2xl
+                    sm:text-3xl
                     font-black
                     text-gray-800
-                    mt-6
+                    mt-2
                 ">
-                    AI Measurements
+                    {{ $originalCount ?? 0 }}
                 </h3>
 
-                <p class="
-                    text-gray-500
-                    mt-3
-                    leading-relaxed
-                    text-sm sm:text-base
-                ">
-                    Segmentation and building measurement results.
-                </p>
+            </div>
 
-            </a>
+            <div class="
+                w-12 h-12
+                rounded-2xl
+                bg-green-100
+                text-green-600
+                flex items-center justify-center
+                text-xl
+            ">
+                <i class="fa-solid fa-image"></i>
+            </div>
 
         </div>
 
-    </section>
+    </div>
+
+    <!-- MEASUREMENTS -->
+    <div class="
+        bg-white
+        rounded-2xl
+        p-4 sm:p-5
+        border border-gray-200
+        shadow-sm
+    ">
+
+        <div class="
+            flex
+            items-center
+            justify-between
+            gap-4
+        ">
+
+            <div>
+
+                <p class="text-gray-500 text-xs sm:text-sm">
+                    Measurements
+                </p>
+
+                <h3 class="
+                    text-2xl
+                    sm:text-3xl
+                    font-black
+                    text-gray-800
+                    mt-2
+                ">
+                    {{ $measurementCount ?? 0 }}
+                </h3>
+
+            </div>
+
+            <div class="
+                w-12 h-12
+                rounded-2xl
+                bg-red-100
+                text-red-600
+                flex items-center justify-center
+                text-xl
+            ">
+                <i class="fa-solid fa-ruler-combined"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TOTAL KECAMATAN -->
+    <div class="
+        bg-white
+        rounded-2xl
+        p-4 sm:p-5
+        border border-gray-200
+        shadow-sm
+    ">
+
+        <div class="
+            flex
+            items-center
+            justify-between
+            gap-4
+        ">
+
+            <div>
+
+                <p class="text-gray-500 text-xs sm:text-sm">
+                    Total Kecamatan
+                </p>
+
+                <h3 class="
+                    text-2xl
+                    sm:text-3xl
+                    font-black
+                    text-gray-800
+                    mt-2
+                ">
+                    {{ $districtCount ?? 0 }}
+                </h3>
+
+            </div>
+
+            <div class="
+                w-12 h-12
+                rounded-2xl
+                bg-yellow-100
+                text-yellow-600
+                flex items-center justify-center
+                text-xl
+            ">
+                <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+```
+
+</section>
+
+<!-- =======================================
+MENU
+======================================== -->
+
+<section class="
+    max-w-7xl
+    mx-auto
+    px-4
+    sm:px-6
+    py-10
+    sm:py-14
+">
+
+```
+<!-- HEADING -->
+<div class="mb-8 text-center">
+
+    <div class="
+        inline-flex
+        items-center
+        gap-2
+        bg-blue-50
+        text-blue-600
+        px-4 py-2
+        rounded-full
+        text-sm
+        font-medium
+        mb-4
+    ">
+
+        <i class="fa-solid fa-layer-group"></i>
+
+        Databank Menu
+
+    </div>
+
+    <h2 class="
+        text-3xl
+        sm:text-4xl
+        font-black
+        text-gray-800
+    ">
+        Explore Database
+    </h2>
+
+    <p class="
+        text-gray-500
+        mt-3
+        max-w-2xl
+        mx-auto
+        text-sm
+        sm:text-base
+    ">
+        Browse poultry farm data, satellite imagery,
+        and AI measurement results in one place.
+    </p>
+
+</div>
+
+<!-- MENU GRID -->
+<div class="
+    grid
+    md:grid-cols-2
+    xl:grid-cols-3
+    gap-6
+">
+
+    <!-- CARD -->
+    <a
+        href="{{ route('databank.farms') }}"
+        class="
+            group
+            bg-white
+            rounded-3xl
+            p-6 sm:p-7
+            border border-gray-200
+            shadow-sm
+            hover:shadow-2xl
+            hover:-translate-y-1
+            transition-all
+            duration-300
+        "
+    >
+
+        <div class="
+            w-16 h-16
+            rounded-2xl
+            bg-blue-100
+            text-blue-600
+            flex items-center justify-center
+            text-3xl
+            group-hover:scale-110
+            transition
+        ">
+            <i class="fa-solid fa-database"></i>
+        </div>
+
+        <h3 class="
+            text-2xl
+            font-black
+            text-gray-800
+            mt-6
+        ">
+            Farm Data
+        </h3>
+
+        <p class="
+            text-gray-500
+            mt-3
+            leading-relaxed
+            text-sm sm:text-base
+        ">
+            View and download poultry farm datasets.
+        </p>
+
+    </a>
+
+    <!-- CARD -->
+    <a
+        href="{{ route('databank.original') }}"
+        class="
+            group
+            bg-white
+            rounded-3xl
+            p-6 sm:p-7
+            border border-gray-200
+            shadow-sm
+            hover:shadow-2xl
+            hover:-translate-y-1
+            transition-all
+            duration-300
+        "
+    >
+
+        <div class="
+            w-16 h-16
+            rounded-2xl
+            bg-green-100
+            text-green-600
+            flex items-center justify-center
+            text-3xl
+            group-hover:scale-110
+            transition
+        ">
+            <i class="fa-solid fa-image"></i>
+        </div>
+
+        <h3 class="
+            text-2xl
+            font-black
+            text-gray-800
+            mt-6
+        ">
+            Original Images
+        </h3>
+
+        <p class="
+            text-gray-500
+            mt-3
+            leading-relaxed
+            text-sm sm:text-base
+        ">
+            Access raw satellite screenshots before AI processing.
+        </p>
+
+    </a>
+
+    <!-- CARD -->
+    <a
+        href="{{ route('databank.measurement') }}"
+        class="
+            group
+            bg-white
+            rounded-3xl
+            p-6 sm:p-7
+            border border-gray-200
+            shadow-sm
+            hover:shadow-2xl
+            hover:-translate-y-1
+            transition-all
+            duration-300
+        "
+    >
+
+        <div class="
+            w-16 h-16
+            rounded-2xl
+            bg-red-100
+            text-red-600
+            flex items-center justify-center
+            text-3xl
+            group-hover:scale-110
+            transition
+        ">
+            <i class="fa-solid fa-ruler-combined"></i>
+        </div>
+
+        <h3 class="
+            text-2xl
+            font-black
+            text-gray-800
+            mt-6
+        ">
+            AI Measurements
+        </h3>
+
+        <p class="
+            text-gray-500
+            mt-3
+            leading-relaxed
+            text-sm sm:text-base
+        ">
+            Segmentation and building measurement results.
+        </p>
+
+    </a>
+
+</div>
+```
+
+</section>
+
 
 </body>
 </html>

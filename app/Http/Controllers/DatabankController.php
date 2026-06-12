@@ -17,33 +17,44 @@ class DatabankController extends Controller
     // MAIN PAGE
     // ==========================================
 
-    public function index() { $farmsCount = Farm::count(); $originalCount = Farm::whereNotNull( 'screenshot' )->count(); $measurementCount = Measurement::count(); return view( 'databank.index', compact( 'farmsCount', 'originalCount', 'measurementCount' ) ); }
+public function index()
+{
+    $farmsCount = Farm::count();
 
+    $originalCount = Farm::whereNotNull('screenshot')
+        ->count();
+
+    $measurementCount = Measurement::count();
+
+    $districtCount = Farm::whereNotNull('district')
+        ->distinct('district')
+        ->count('district');
+
+    return view(
+        'databank.index',
+        compact(
+            'farmsCount',
+            'originalCount',
+            'measurementCount',
+            'districtCount'
+        )
+    );
+}
     // ==========================================
     // FARM TABLE
     // ==========================================
-
-public function farms(Request $request)
+public function farms()
 {
-    $search = $request->search;
+    $farms = Farm::all();
 
-    $farms = Farm::query()
-
-        ->when($search, function ($query) use ($search) {
-
-            $query->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('address', 'like', '%' . $search . '%')
-                  ->orWhere('phone', 'like', '%' . $search . '%');
-
-        })
-
-        ->latest()
-
-        ->get();
+    $districts = Farm::select('district')
+        ->distinct()
+        ->orderBy('district')
+        ->pluck('district');
 
     return view('databank.farms', compact(
         'farms',
-        'search'
+        'districts'
     ));
 }
 
@@ -55,9 +66,14 @@ public function farms(Request $request)
     {
         $farms = Farm::all();
 
+        $districts = Farm::select('district')
+        ->distinct()
+        ->orderBy('district')
+        ->pluck('district');
+
         return view(
             'databank.original-images',
-            compact('farms')
+            compact('farms','districts')
         );
     }
 
@@ -69,9 +85,14 @@ public function farms(Request $request)
     {
         $farms = Farm::with('measurements')->get();
 
+        $districts = Farm::select('district')
+        ->distinct()
+        ->orderBy('district')
+        ->pluck('district');
+
         return view(
             'databank.measurement-images',
-            compact('farms')
+            compact('farms','districts')
         );
     }
     public function downloadFarms()

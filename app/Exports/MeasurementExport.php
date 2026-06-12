@@ -4,8 +4,9 @@ namespace App\Exports;
 
 use App\Models\Measurement;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class MeasurementExport implements FromCollection
+class MeasurementExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
@@ -15,22 +16,35 @@ class MeasurementExport implements FromCollection
 
                 return [
 
-                    'Farm Name' =>
-                        $m->farm->name ?? '-',
+                    $m->farm->name ?? '-',
 
-                    'Object Name' =>
-                        $m->object_name,
+                    $m->object_name,
 
-                    'Length (m)' =>
-                        $m->length,
+                    $m->length . ' m',
 
-                    'Width (m)' =>
-                        $m->width,
+                    $m->width . ' m',
 
-                    'Area (m²)' =>
-                        $m->area,
+                    $m->area . ' m²',
 
                 ];
+
             });
+    }
+
+    public function headings(): array
+    {
+        return [
+
+            'Farm Name',
+
+            'Object Name',
+
+            'Length',
+
+            'Width',
+
+            'Area',
+
+        ];
     }
 }

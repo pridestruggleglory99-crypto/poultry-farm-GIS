@@ -17,49 +17,120 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <style>
-        .leaflet-container { z-index: 1; }
 
-        #imageModal { z-index: 9999; }
+        .leaflet-container {
+            z-index: 1;
+        }
 
-        #imageViewport {
+        .leaflet-popup {
+            margin-bottom: 12px;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 14px 16px !important;
+        }
+
+        .popup-goto {
+            display: block;
+            margin-top: 10px;
+            background: #3b82f6;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .popup-goto:hover {
+            background: #2563eb;
+        }
+
+        @keyframes rowBlink {
+            0%,100% { background: #dbeafe; }
+            50% { background: transparent; }
+        }
+
+        @keyframes cardBlink {
+            0%,100% {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px #bfdbfe;
+            }
+            50% {
+                border-color: #e5e7eb;
+                box-shadow: none;
+            }
+        }
+
+        .row-highlight {
+            animation: rowBlink 0.6s ease 4;
+        }
+
+        .card-highlight {
+            animation: cardBlink 0.6s ease 4;
+        }
+
+        .card-field {
+            display: grid;
+            grid-template-columns: 68px 1fr;
+            column-gap: 8px;
+            align-items: start;
+            padding: 6px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .card-field:last-of-type {
+            border-bottom: none;
+        }
+
+        .card-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            padding-top: 2px;
+            line-height: 1.4;
+        }
+
+        .card-value {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        #imageViewport,
+        #measureViewport {
             position: relative;
             overflow: hidden;
             width: 100%;
             background: #f3f4f6;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
-            cursor: default;
-            user-select: none;
-            touch-action: none;
-        }
-
-        #imageWrapper {
+            text-align: center;
             display: flex;
-            justify-content: center;
             align-items: center;
-            transform-origin: center center;
-            will-change: transform;
+            justify-content: center;
         }
 
-        #imageWrapper img {
-            max-width: 100%;
-            display: block;
-            pointer-events: none;
+        #modalImage,
+        #measurementImage {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             border-radius: 8px;
-        }
-
-        #zoomLabel {
-            position: absolute;
-            bottom: 10px;
-            right: 12px;
-            background: rgba(0,0,0,0.55);
-            color: #fff;
-            font-size: 12px;
-            padding: 3px 8px;
-            border-radius: 999px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
+            transition: transform 0.2s ease;
+            transform-origin: center center;
+            display: block;
         }
 
         .zoom-btn {
@@ -77,244 +148,458 @@
             transition: background 0.15s;
         }
 
-        .zoom-btn:hover { background: #f9fafb; }
-
-        @media (max-width: 640px) {
-            .table-head { display: none; }
-
-            .farm-row {
-                display: block;
-                border: 1px solid #e5e7eb;
-                border-radius: 12px;
-                margin-bottom: 12px;
-                padding: 12px;
-                background: #fff;
-            }
-
-            .farm-row td {
-                display: flex;
-                align-items: flex-start;
-                gap: 8px;
-                padding: 6px 0;
-                border: none;
-                font-size: 14px;
-            }
-
-            .farm-row td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: #6b7280;
-                min-width: 80px;
-                flex-shrink: 0;
-            }
-
-            .farm-row td.td-center { justify-content: flex-start; }
+        .zoom-btn:hover {
+            background: #f9fafb;
         }
+
+        /* DROPDOWN MENU */
+        .action-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .action-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            min-width: 170px;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .action-menu.open {
+            display: block;
+        }
+
+        .action-menu a,
+        .action-menu button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #374151;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            text-decoration: none;
+            transition: background 0.1s;
+        }
+
+        .action-menu a:hover,
+        .action-menu button:hover {
+            background: #f9fafb;
+        }
+
+        .action-menu .menu-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
     </style>
 
 </head>
 
+<x-back-to-top/>
+
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- NAVBAR -->
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6">
-            <div class="h-16 flex items-center justify-between">
+<!-- NAVBAR -->
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
 
-                <div>
-                    <h1 class="text-lg sm:text-2xl font-black text-gray-800">Poultry GIS</h1>
-                    <p class="hidden sm:block text-xs text-gray-500">Poultry Farm Monitoring System</p>
-                </div>
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6">
 
-                <div class="flex items-center gap-2">
-                    <a href="/" class="px-3 sm:px-4 py-2 rounded-xl text-gray-600 hover:bg-gray-100 transition text-sm">
-                        Dashboard
-                    </a>
-                    <a href="/databank" class="px-3 sm:px-4 py-2 rounded-xl bg-blue-500 text-white shadow-sm text-sm">
-                        Databank
-                    </a>
-                </div>
+        <div class="h-14 sm:h-16 flex items-center justify-between">
+
+            <div>
+                <h1 class="text-lg sm:text-2xl font-black text-gray-800">
+                    Poultry GIS
+                </h1>
+
+                <p class="hidden sm:block text-xs text-gray-500">
+                    Poultry Farm Monitoring System
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+
+                <a href="/"
+                   class="px-3 py-2 rounded-xl text-gray-600 hover:bg-gray-100 transition text-sm">
+                    Dashboard
+                </a>
+
+                <a href="/databank"
+                   class="px-3 py-2 rounded-xl bg-blue-500 text-white text-sm">
+                    Databank
+                </a>
 
             </div>
-        </div>
-    </nav>
 
-    <!-- CONTENT -->
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
-
-        <!-- MAP -->
-        <div class="bg-white rounded-2xl shadow-sm p-3 sm:p-4">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-700 mb-3 sm:mb-4">Farm Map</h2>
-            <div id="map" class="w-full rounded-xl" style="height: clamp(280px, 50vw, 500px);"></div>
         </div>
 
-        <!-- TABLE -->
-        <div class="bg-white rounded-2xl shadow-sm p-3 sm:p-4">
+    </div>
 
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                <h2 class="text-lg sm:text-xl font-semibold text-gray-700">Poultry Farm Data</h2>
+</nav>
+
+<!-- CONTENT -->
+<div class="max-w-screen-2xl mx-auto p-3 sm:p-6 space-y-6">
+
+    <!-- MAP -->
+    <div id="map"
+         class="w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm"
+         style="height:65vh;">
+    </div>
+
+    <!-- TABLE -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+
+        <!-- FILTER -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+
+            <div class="relative flex-1">
+
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+
                 <input
                     type="text"
                     id="searchInput"
                     placeholder="Search farm..."
-                    class="border border-gray-300 rounded-lg px-4 py-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    class="w-full border border-gray-300 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
+
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse min-w-[560px] sm:min-w-0">
+            <select
+                id="districtFilter"
+                class="border border-gray-300 rounded-2xl px-4 py-3 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
 
-                    <thead class="table-head">
-                        <tr class="bg-gray-100 text-left text-sm">
-                            <th class="p-3">Name</th>
-                            <th class="p-3">Address</th>
-                            <th class="p-3">Phone</th>
-                            <th class="p-3 text-center">Maps</th>
-                            <th class="p-3 text-center">Location</th>
-                            <th class="p-3 text-center">Building Measurement</th>
+                <option value="">All Kecamatan</option>
+
+                @foreach($districts as $district)
+                    <option value="{{ strtolower($district) }}">
+                        {{ $district }}
+                    </option>
+                @endforeach
+
+            </select>
+
+            <button
+                type="button"
+                id="resetBtn"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-3 rounded-2xl text-sm transition"
+            >
+                Reset
+            </button>
+
+        </div>
+
+        <!-- MOBILE -->
+        <div class="grid gap-3 md:hidden">
+
+            @foreach($farms as $farm)
+
+                <div
+                    class="farm-card bg-white border border-gray-200 rounded-2xl shadow-sm"
+                    id="card-{{ $farm->id }}"
+                    data-search="{{ strtolower($farm->name . ' ' . $farm->address . ' ' . $farm->district . ' ' . $farm->phone) }}"
+                    data-district="{{ strtolower($farm->district) }}"
+                >
+
+                    <div class="px-4 pt-4 pb-3 border-b border-gray-100">
+
+                        <h3 class="font-bold text-gray-800 text-base leading-snug">
+                            {{ $farm->name }}
+                        </h3>
+
+                    </div>
+
+                    <div class="px-4 py-1">
+
+                        <div class="card-field">
+                            <span class="card-label">Address</span>
+                            <span class="card-value">{{ $farm->address }}</span>
+                        </div>
+
+                        <div class="card-field">
+                            <span class="card-label">Kecamatan</span>
+                            <span class="card-value">{{ $farm->district }}</span>
+                        </div>
+
+                        <div class="card-field">
+                            <span class="card-label">Phone</span>
+                            <span class="card-value">{{ $farm->phone }}</span>
+                        </div>
+
+                    </div>
+
+                    <div class="px-4 pb-4 pt-3 grid grid-cols-3 gap-2">
+
+                        <a
+                            href="{{ $farm->google_maps }}"
+                            target="_blank"
+                            class="bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-xl text-sm flex items-center justify-center"
+                        >
+                            <i class="fa-solid fa-link"></i>
+                        </a>
+
+                        <button
+                            onclick="goToPin({{ $farm->id }})"
+                            class="bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl text-sm"
+                        >
+                            <i class="fa-solid fa-location-dot"></i>
+                        </button>
+
+                        <button
+                            onclick="openModal('{{ asset($farm->screenshot) }}', '{{ $farm->name }}', {{ $farm->id }})"
+                            class="bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-xl text-sm"
+                        >
+                            <i class="fa-solid fa-ruler-combined"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            @endforeach
+
+        </div>
+
+        <!-- DESKTOP -->
+        <div class="hidden md:block overflow-x-auto">
+
+            <table class="w-full text-sm">
+
+                <thead>
+
+                    <tr class="bg-gray-50 text-gray-500 uppercase text-xs">
+
+                        <th class="px-4 py-3 text-left">Name</th>
+                        <th class="px-4 py-3 text-left">Address</th>
+                        <th class="px-4 py-3 text-left">Kecamatan</th>
+                        <th class="px-4 py-3 text-left">Phone</th>
+                        <th class="px-4 py-3 text-center">Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach($farms as $farm)
+
+                        <tr
+                            class="farm-row border-b hover:bg-gray-50 transition"
+                            id="row-{{ $farm->id }}"
+                            data-search="{{ strtolower($farm->name . ' ' . $farm->address . ' ' . $farm->district . ' ' . $farm->phone) }}"
+                            data-district="{{ strtolower($farm->district) }}"
+                        >
+
+                            <td class="px-4 py-4 font-medium text-gray-800">
+                                {{ $farm->name }}
+                            </td>
+
+                            <td class="px-4 py-4 text-gray-600">
+                                {{ $farm->address }}
+                            </td>
+
+                            <td class="px-4 py-4">
+
+                                <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                                    {{ $farm->district }}
+                                </span>
+
+                            </td>
+
+                            <td class="px-4 py-4 text-gray-600">
+                                {{ $farm->phone }}
+                            </td>
+
+                            <td class="px-4 py-4 text-center">
+
+                                <div class="action-wrapper">
+
+                                    <button
+                                        onclick="toggleMenu(this)"
+                                        class="bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition flex items-center gap-1.5"
+                                    >
+                                        Action
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </button>
+
+                                    <div class="action-menu">
+
+                                        <a href="{{ $farm->google_maps }}" target="_blank">
+                                            <span class="menu-icon bg-green-100 text-green-600">
+                                                <i class="fa-solid fa-link"></i>
+                                            </span>
+                                            Google Maps
+                                        </a>
+
+                                        <button onclick="closeMenus(); goToPin({{ $farm->id }})">
+                                            <span class="menu-icon bg-blue-100 text-blue-600">
+                                                <i class="fa-solid fa-location-dot"></i>
+                                            </span>
+                                            Lihat di Peta
+                                        </button>
+
+                                        <button onclick="closeMenus(); openModal('{{ asset($farm->screenshot) }}', '{{ $farm->name }}', {{ $farm->id }})">
+                                            <span class="menu-icon bg-indigo-100 text-indigo-600">
+                                                <i class="fa-solid fa-ruler-combined"></i>
+                                            </span>
+                                            Ukur Bangunan
+                                        </button>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
                         </tr>
-                    </thead>
 
-                    <tbody>
-                        @foreach ($farms as $farm)
-                            <tr
-                                class="border-b hover:bg-gray-50 farm-row"
-                                data-name="{{ strtolower($farm->name) }}"
-                                data-address="{{ strtolower($farm->address) }}"
-                            >
-                                <td class="p-3 text-sm" data-label="Name">{{ $farm->name }}</td>
-                                <td class="p-3 text-sm" data-label="Address">{{ $farm->address }}</td>
-                                <td class="p-3 text-sm" data-label="Phone">{{ $farm->phone }}</td>
+                    @endforeach
 
-                                <!-- MAPS LINK -->
-                                <td class="p-3 text-center td-center" data-label="Maps">
-                                    <a
-                                        href="{{ $farm->google_maps }}"
-                                        target="_blank"
-                                        class="text-blue-500 hover:text-blue-700 text-xl"
-                                        aria-label="Open in Google Maps"
-                                    >
-                                        <i class="fa-solid fa-link"></i>
-                                    </a>
-                                </td>
+                </tbody>
 
-                                <!-- GO TO PIN -->
-                                <td class="p-3 text-center td-center" data-label="Location">
-                                    <button
-                                        onclick="goToPin({{ $farm->id }})"
-                                        class="text-green-500 hover:text-green-700 text-xl"
-                                        title="Go to pin"
-                                    >
-                                        <i class="fa-solid fa-location-dot"></i>
-                                    </button>
-                                </td>
-
-                                <!-- DETAIL -->
-                                <td class="p-3 text-center td-center" data-label="Measurement">
-                                    <button
-                                        onclick="openModal('{{ asset($farm->screenshot) }}', '{{ $farm->name }}', {{ $farm->id }})"
-                                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
-                                    >
-                                        Detail
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-
-                </table>
-            </div>
+            </table>
 
         </div>
 
     </div>
 
-    <!-- MODAL -->
-    <div
-        id="imageModal"
-        class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4 sm:p-6"
-    >
-        <div class="bg-white rounded-2xl w-full max-w-4xl relative flex flex-col max-h-[95vh] overflow-hidden">
+</div>
 
-            <!-- HEADER -->
-            <div class="flex items-center justify-between px-5 py-4 border-b flex-shrink-0">
-                <h2 id="modalTitle" class="text-xl font-bold text-gray-800"></h2>
-                <button onclick="closeModal()" class="text-2xl text-gray-400 hover:text-red-500 leading-none">&times;</button>
+<!-- MODAL -->
+<div
+    id="imageModal"
+    style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); align-items:flex-start; justify-content:center; z-index:99999; padding:1rem; overflow-y:auto; -webkit-overflow-scrolling:touch;"
+>
+
+    <div class="bg-white rounded-2xl w-full max-w-5xl relative flex flex-col my-auto">
+
+        <!-- HEADER -->
+        <div class="flex items-center justify-between px-5 py-4 border-b flex-shrink-0">
+
+            <h2 id="modalTitle" class="text-xl font-bold text-gray-800"></h2>
+
+            <button
+                onclick="closeModal()"
+                class="text-2xl text-gray-400 hover:text-red-500 leading-none"
+            >
+                &times;
+            </button>
+
+        </div>
+
+        <!-- BODY -->
+        <div class="p-5 space-y-6">
+
+            <!-- ORIGINAL IMAGE -->
+            <div>
+
+                <h3 class="text-base font-semibold text-gray-700 mb-3">
+                    Original Satellite Image
+                </h3>
+
+                <div
+                    id="imageViewport"
+                    style="height: clamp(160px, 30vw, 420px);"
+                >
+                    <img id="modalImage" src="" alt="">
+                </div>
+
+                <div class="flex items-center gap-2 mt-2">
+                    <button class="zoom-btn" onclick="zoomIn()">+</button>
+                    <button class="zoom-btn" onclick="zoomOut()">−</button>
+                    <button class="zoom-btn" style="width:auto;padding:0 10px;font-size:11px;" onclick="zoomReset()">Reset</button>
+                </div>
+
             </div>
 
-            <!-- BODY -->
-            <div class="overflow-y-auto p-5 space-y-6">
+            <!-- MEASURE BUTTON -->
+            <div>
 
-                <!-- ORIGINAL IMAGE -->
+                <button
+                    id="measureBtn"
+                    onclick="showMeasurement()"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium"
+                >
+                    <i class="fa-solid fa-ruler-combined mr-2"></i>
+                    Ukur Bangunan
+                </button>
+
+            </div>
+
+            <!-- LOADING -->
+            <div id="loadingBox" class="hidden flex items-center gap-3 text-blue-500 font-medium">
+
+                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+
+                Memproses pengukuran...
+
+            </div>
+
+            <!-- RESULT -->
+            <div id="measurementSection" class="hidden space-y-5">
+
                 <div>
-                    <h3 class="text-base font-semibold text-gray-700 mb-3">Original Satellite Image</h3>
-                    <div id="imageViewport" style="height: clamp(220px, 40vw, 420px);">
-                        <div id="imageWrapper">
-                            <img id="modalImage" src="" alt="Satellite image">
-                        </div>
-                        <span id="zoomLabel">100%</span>
+
+                    <h3 class="text-base font-semibold text-gray-700 mb-3">
+                        Hasil Pengukuran AI
+                    </h3>
+
+                    <div id="measureViewport" style="height: clamp(160px, 30vw, 420px);">
+                        <img id="measurementImage" src="" alt="">
                     </div>
+
                     <div class="flex items-center gap-2 mt-2">
-                        <button class="zoom-btn" onclick="zoomIn()">+</button>
-                        <button class="zoom-btn" onclick="zoomOut()">−</button>
-                        <button class="zoom-btn" style="width:auto;padding:0 10px;font-size:11px;" onclick="zoomReset()">Reset</button>
-                        <span class="text-xs text-gray-400 ml-1">Scroll / pinch to zoom · drag to pan</span>
+                        <button class="zoom-btn" onclick="mZoomIn()">+</button>
+                        <button class="zoom-btn" onclick="mZoomOut()">−</button>
+                        <button class="zoom-btn" style="width:auto;padding:0 10px;font-size:11px;" onclick="mZoomReset()">Reset</button>
                     </div>
+
                 </div>
 
-                <!-- MEASURE BUTTON -->
                 <div>
-                    <button
-                        id="measureBtn"
-                        onclick="showMeasurement()"
-                        class="bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
-                    >
-                        <i class="fa-solid fa-ruler-combined mr-2"></i>Ukur Bangunan
-                    </button>
-                </div>
 
-                <!-- LOADING -->
-                <div id="loadingBox" class="hidden flex items-center gap-3 text-blue-500 font-medium">
-                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                    </svg>
-                    Memproses pengukuran...
-                </div>
+                    <h3 class="text-base font-semibold text-gray-700 mb-3">
+                        Data Pengukuran
+                    </h3>
 
-                <!-- RESULT -->
-                <div id="measurementSection" class="hidden space-y-5">
+                    <div class="overflow-x-auto rounded-xl border border-gray-200">
 
-                    <div>
-                        <h3 class="text-base font-semibold text-gray-700 mb-3">Hasil Pengukuran AI</h3>
-                        <div id="measureViewport" style="height: clamp(220px, 40vw, 420px); position:relative; overflow:hidden; width:100%; background:#f3f4f6; border-radius:12px; border:1px solid #e5e7eb; user-select:none; touch-action:none;">
-                            <div id="measureWrapper" style="display:flex; justify-content:center; align-items:center; transform-origin:center center; will-change:transform;">
-                                <img id="measurementImage" src="" alt="Measurement result" style="max-width:100%; display:block; pointer-events:none; border-radius:8px;">
-                            </div>
-                            <span id="measureZoomLabel" style="position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,0.55);color:#fff;font-size:12px;padding:3px 8px;border-radius:999px;opacity:0;transition:opacity 0.3s;pointer-events:none;"></span>
-                        </div>
-                        <div class="flex items-center gap-2 mt-2">
-                            <button class="zoom-btn" onclick="mZoomIn()">+</button>
-                            <button class="zoom-btn" onclick="mZoomOut()">−</button>
-                            <button class="zoom-btn" style="width:auto;padding:0 10px;font-size:11px;" onclick="mZoomReset()">Reset</button>
-                        </div>
-                    </div>
+                        <table class="w-full border-collapse text-sm">
 
-                    <div>
-                        <h3 class="text-base font-semibold text-gray-700 mb-3">Data Pengukuran</h3>
-                        <div class="overflow-x-auto rounded-xl border border-gray-200">
-                            <table class="w-full border-collapse text-sm">
-                                <thead>
-                                    <tr class="bg-gray-50 text-gray-600">
-                                        <th class="p-3 text-left font-semibold">Objek</th>
-                                        <th class="p-3 text-left font-semibold">Panjang</th>
-                                        <th class="p-3 text-left font-semibold">Lebar</th>
-                                        <th class="p-3 text-left font-semibold">Luas</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="measurementTableBody"></tbody>
-                            </table>
-                        </div>
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-600">
+                                    <th class="p-3 text-left font-semibold">Objek</th>
+                                    <th class="p-3 text-left font-semibold">Panjang</th>
+                                    <th class="p-3 text-left font-semibold">Lebar</th>
+                                    <th class="p-3 text-left font-semibold">Luas</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="measurementTableBody"></tbody>
+
+                        </table>
+
                     </div>
 
                 </div>
@@ -322,279 +607,247 @@
             </div>
 
         </div>
+
     </div>
 
-    <!-- SCRIPTS -->
-    <script>
+</div>
 
-        // ── MAP ──
-        const initialCenter = [-6.9147, 107.6098];
-        const initialZoom   = 11;
+<script>
 
-        const map = L.map('map').setView(initialCenter, initialZoom);
+    // MAP
+    const map = L.map('map').setView([-6.9147, 107.6098], 11);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-        const farms   = @json($farms);
-        const markers = {};
+    const farms = @json($farms->values());
 
-        farms.forEach(farm => {
-            if (farm.latitude && farm.longitude) {
-                const marker = L.marker([farm.latitude, farm.longitude])
-                    .addTo(map)
-                    .bindPopup(`
-                        <div style="width:200px">
-                            <h3 style="font-weight:bold;margin-bottom:6px;font-size:14px;">${farm.name ?? '-'}</h3>
-                            <p style="font-size:12px;color:#555;">${farm.address ?? '-'}</p>
-                            ${farm.screenshot ? `<img src="/${farm.screenshot}" style="width:100%;margin-top:8px;border-radius:8px;">` : ''}
-                        </div>
-                    `);
-                markers[farm.id] = marker;
-            }
-        });
+    const markers = {};
 
-        // ── GO TO PIN ──
-        function goToPin(farmId) {
-            const marker = markers[farmId];
-            if (!marker) return;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            map.flyTo(marker.getLatLng(), 17, { duration: 1.2 });
-            setTimeout(() => marker.openPopup(), 1300);
+    farms.forEach(farm => {
+
+        if (farm.latitude && farm.longitude) {
+
+            const marker = L.marker([farm.latitude, farm.longitude])
+                .addTo(map)
+                .bindPopup(`
+                    <div style="width:210px">
+                        <h3 style="font-weight:700;font-size:14px;margin:0 0 4px;">${farm.name}</h3>
+                        <p style="font-size:12px;color:#6b7280;">${farm.address ?? '-'}</p>
+                        ${farm.screenshot ? `<img src="/${farm.screenshot}" style="width:100%;margin-top:8px;border-radius:8px;">` : ''}
+                        <button class="popup-goto" onclick="goToData(${farm.id})">Go to Data</button>
+                    </div>
+                `);
+
+            markers[farm.id] = marker;
         }
 
-        // ── RESET VIEW BUTTON ──
-        const resetControl = L.control({ position: 'topright' });
-        resetControl.onAdd = function () {
-            const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-            div.innerHTML = `<button style="background:white;padding:6px 10px;cursor:pointer;font-weight:bold;font-size:13px;">Reset View</button>`;
-            div.onclick = () => map.setView(initialCenter, initialZoom);
-            return div;
-        };
-        resetControl.addTo(map);
+    });
 
-        // ── SEARCH ──
-        document.getElementById('searchInput').addEventListener('input', function () {
-            const q = this.value.toLowerCase();
-            document.querySelectorAll('.farm-row').forEach(row => {
-                const name    = row.dataset.name    || '';
-                const address = row.dataset.address || '';
-                row.style.display = (name.includes(q) || address.includes(q)) ? '' : 'none';
-            });
-        });
+    // RESET VIEW
+    const resetControl = L.control({ position: 'topright' });
 
-        // ── ZOOM/PAN FACTORY ──
-        function makeZoomPan(viewportEl, wrapperEl, labelEl) {
+    resetControl.onAdd = function () {
 
-            const ZOOM_STEP = 0.25;
-            const MIN_SCALE = 0.5;
-            const MAX_SCALE = 5;
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
 
-            let scale     = 1, tx = 0, ty = 0;
-            let dragging  = false;
-            let dsx = 0, dsy = 0, dox = 0, doy = 0;
-            let pointers  = [], lastPinch = null, labelTimer = null, lastTap = 0;
+        div.innerHTML = `
+            <button style="background:white;padding:6px 12px;cursor:pointer;font-weight:600;font-size:13px;">
+                Reset View
+            </button>
+        `;
 
-            function apply(animate) {
-                wrapperEl.style.transition = animate ? 'transform 0.2s ease' : 'none';
-                wrapperEl.style.transform  = `scale(${scale}) translate(${tx}px,${ty}px)`;
-            }
+        div.onclick = () => map.setView([-6.9147, 107.6098], 11);
 
-            function showLabel() {
-                if (!labelEl) return;
-                labelEl.textContent   = Math.round(scale * 100) + '%';
-                labelEl.style.opacity = '1';
-                clearTimeout(labelTimer);
-                labelTimer = setTimeout(() => { labelEl.style.opacity = '0'; }, 1200);
-            }
+        return div;
+    };
 
-            function clamp() {
-                if (scale <= 1) { tx = 0; ty = 0; return; }
-                const vw = viewportEl.clientWidth,  vh = viewportEl.clientHeight;
-                const iw = wrapperEl.clientWidth,   ih = wrapperEl.clientHeight;
-                const mx = Math.max(0, (iw * scale - vw) / (2 * scale));
-                const my = Math.max(0, (ih * scale - vh) / (2 * scale));
-                tx = Math.min(mx, Math.max(-mx, tx));
-                ty = Math.min(my, Math.max(-my, ty));
-            }
+    resetControl.addTo(map);
 
-            function zoomAt(ns, px, py) {
-                ns = Math.min(MAX_SCALE, Math.max(MIN_SCALE, ns));
-                const vw = viewportEl.clientWidth, vh = viewportEl.clientHeight;
-                const iw = wrapperEl.clientWidth,  ih = wrapperEl.clientHeight;
-                tx -= ((px / vw - 0.5) * iw) * (ns / scale - 1) / ns;
-                ty -= ((py / vh - 0.5) * ih) * (ns / scale - 1) / ns;
-                scale = ns;
-                clamp(); apply(true); showLabel();
-            }
+    // DROPDOWN MENU
+    function toggleMenu(btn) {
+        const menu = btn.nextElementSibling;
+        const isOpen = menu.classList.contains('open');
+        closeMenus();
+        if (!isOpen) menu.classList.add('open');
+    }
 
-            const api = {
-                zoomIn()    { zoomAt(scale + ZOOM_STEP, viewportEl.clientWidth/2,  viewportEl.clientHeight/2); },
-                zoomOut()   { zoomAt(scale - ZOOM_STEP, viewportEl.clientWidth/2,  viewportEl.clientHeight/2); },
-                zoomReset() { scale=1; tx=0; ty=0; apply(true); showLabel(); },
-            };
+    function closeMenus() {
+        document.querySelectorAll('.action-menu.open').forEach(m => m.classList.remove('open'));
+    }
 
-            viewportEl.addEventListener('wheel', e => {
-                e.preventDefault();
-                const r = viewportEl.getBoundingClientRect();
-                zoomAt(scale + (e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), e.clientX - r.left, e.clientY - r.top);
-            }, { passive: false });
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.action-wrapper')) closeMenus();
+    });
 
-            viewportEl.addEventListener('mousedown', e => {
-                if (scale <= 1) return;
-                dragging = true; dsx = e.clientX; dsy = e.clientY; dox = tx; doy = ty;
-                viewportEl.style.cursor = 'grabbing';
-            });
-            document.addEventListener('mousemove', e => {
-                if (!dragging) return;
-                tx = dox + (e.clientX - dsx) / scale;
-                ty = doy + (e.clientY - dsy) / scale;
-                clamp(); apply();
-            });
-            document.addEventListener('mouseup', () => {
-                if (!dragging) return;
-                dragging = false;
-                viewportEl.style.cursor = scale > 1 ? 'grab' : 'default';
-            });
+    // GO TO PIN
+    function goToPin(id) {
 
-            viewportEl.addEventListener('touchstart', e => {
-                pointers = Array.from(e.touches);
-                if (pointers.length === 1 && scale > 1) {
-                    dragging = true; dsx = pointers[0].clientX; dsy = pointers[0].clientY; dox = tx; doy = ty;
-                }
-                if (pointers.length === 2) {
-                    lastPinch = Math.hypot(pointers[0].clientX - pointers[1].clientX, pointers[0].clientY - pointers[1].clientY);
-                }
-            }, { passive: true });
+        const marker = markers[id];
 
-            viewportEl.addEventListener('touchmove', e => {
-                if (e.touches.length === 2) {
-                    e.preventDefault();
-                    const t1 = e.touches[0], t2 = e.touches[1];
-                    const d  = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-                    if (lastPinch) {
-                        const r = viewportEl.getBoundingClientRect();
-                        zoomAt(scale * (d / lastPinch), (t1.clientX+t2.clientX)/2 - r.left, (t1.clientY+t2.clientY)/2 - r.top);
-                    }
-                    lastPinch = d;
-                } else if (e.touches.length === 1 && dragging) {
-                    tx = dox + (e.touches[0].clientX - dsx) / scale;
-                    ty = doy + (e.touches[0].clientY - dsy) / scale;
-                    clamp(); apply();
-                }
-            }, { passive: false });
+        if (!marker) return;
 
-            viewportEl.addEventListener('touchend', () => { dragging = false; lastPinch = null; pointers = []; });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            viewportEl.addEventListener('dblclick', e => {
-                const r = viewportEl.getBoundingClientRect();
-                scale < 2 ? zoomAt(2, e.clientX - r.left, e.clientY - r.top) : api.zoomReset();
-            });
+        map.flyTo(marker.getLatLng(), 18, { duration: 1.5 });
 
-            viewportEl.addEventListener('touchend', e => {
-                const now = Date.now();
-                if (now - lastTap < 300 && e.changedTouches.length === 1) {
-                    const r = viewportEl.getBoundingClientRect();
-                    scale < 2 ? zoomAt(2, e.changedTouches[0].clientX - r.left, e.changedTouches[0].clientY - r.top) : api.zoomReset();
-                }
-                lastTap = now;
-            });
+        setTimeout(() => marker.openPopup(), 1200);
+    }
 
-            return api;
+    // GO TO DATA
+    function goToData(id) {
+
+        const row = document.getElementById('row-' + id);
+        const card = document.getElementById('card-' + id);
+
+        if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('row-highlight');
+            setTimeout(() => row.classList.remove('row-highlight'), 2400);
         }
 
-        const origZoom    = makeZoomPan(
-            document.getElementById('imageViewport'),
-            document.getElementById('imageWrapper'),
-            document.getElementById('zoomLabel')
-        );
-        const measureZoom = makeZoomPan(
-            document.getElementById('measureViewport'),
-            document.getElementById('measureWrapper'),
-            document.getElementById('measureZoomLabel')
-        );
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('card-highlight');
+            setTimeout(() => card.classList.remove('card-highlight'), 2400);
+        }
+    }
 
-        function zoomIn()    { origZoom.zoomIn(); }
-        function zoomOut()   { origZoom.zoomOut(); }
-        function zoomReset() { origZoom.zoomReset(); }
-        function mZoomIn()   { measureZoom.zoomIn(); }
-        function mZoomOut()  { measureZoom.zoomOut(); }
-        function mZoomReset(){ measureZoom.zoomReset(); }
+    // FILTER
+    const searchInput = document.getElementById('searchInput');
+    const districtFilter = document.getElementById('districtFilter');
+    const resetBtn = document.getElementById('resetBtn');
 
-        // ── MODAL ──
-        let currentFarmId = null;
+    function applyFilter() {
 
-        function openModal(image, title, farmId) {
-            currentFarmId = farmId;
+        const keyword = searchInput.value.toLowerCase();
+        const district = districtFilter.value;
 
-            document.getElementById('modalImage').src       = image;
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('measurementSection').classList.add('hidden');
+        document.querySelectorAll('.farm-card').forEach(card => {
+            const match = card.dataset.search.includes(keyword) && (district === '' || card.dataset.district === district);
+            card.style.display = match ? '' : 'none';
+        });
+
+        document.querySelectorAll('.farm-row').forEach(row => {
+            const match = row.dataset.search.includes(keyword) && (district === '' || row.dataset.district === district);
+            row.style.display = match ? 'table-row' : 'none';
+        });
+    }
+
+    searchInput.addEventListener('input', applyFilter);
+    districtFilter.addEventListener('change', applyFilter);
+    resetBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        districtFilter.value = '';
+        applyFilter();
+    });
+
+    // MODAL
+    let currentFarmId = null;
+
+    function openModal(image, title, farmId) {
+
+        currentFarmId = farmId;
+
+        document.getElementById('modalImage').src = image;
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('measurementSection').classList.add('hidden');
+        document.getElementById('loadingBox').classList.add('hidden');
+        document.getElementById('measurementTableBody').innerHTML = '';
+        document.getElementById('measurementImage').src = '';
+
+        zoomReset();
+        mZoomReset();
+
+        const modal = document.getElementById('imageModal');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // MEASUREMENT
+    async function showMeasurement() {
+
+        document.getElementById('loadingBox').classList.remove('hidden');
+        document.getElementById('measurementSection').classList.add('hidden');
+
+        try {
+
+            const response = await fetch(`/farm/${currentFarmId}/measurement`);
+            const data = await response.json();
+
             document.getElementById('loadingBox').classList.add('hidden');
-            document.getElementById('measurementTableBody').innerHTML = '';
-            document.getElementById('measurementImage').src = '';
-            document.getElementById('measureBtn').disabled  = false;
+            document.getElementById('measurementSection').classList.remove('hidden');
+            document.getElementById('measurementImage').src = data.image;
 
-            origZoom.zoomReset();
+            let html = '';
+            data.measurements.forEach(item => {
+                html += `
+                    <tr class="border-t border-gray-100 hover:bg-gray-50">
+                        <td class="p-3">${item.object_name}</td>
+                        <td class="p-3">${item.length} m</td>
+                        <td class="p-3">${item.width} m</td>
+                        <td class="p-3">${item.area} m²</td>
+                    </tr>
+                `;
+            });
 
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            document.getElementById('measurementTableBody').innerHTML = html;
+
+        } catch (error) {
+            document.getElementById('loadingBox').classList.add('hidden');
+            alert('Gagal memuat data pengukuran.');
         }
+    }
 
-        function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
+    // ZOOM ORIGINAL
+    function zoomIn() {
+        const img = document.getElementById('modalImage');
+        let scale = parseFloat(img.dataset.scale || 1) + 0.2;
+        img.dataset.scale = scale;
+        img.style.transform = `scale(${scale})`;
+    }
 
-        document.getElementById('imageModal').addEventListener('click', function (e) {
-            if (e.target === this) closeModal();
-        });
+    function zoomOut() {
+        const img = document.getElementById('modalImage');
+        let scale = Math.max(1, parseFloat(img.dataset.scale || 1) - 0.2);
+        img.dataset.scale = scale;
+        img.style.transform = `scale(${scale})`;
+    }
 
-        // ── MEASUREMENT ──
-        async function showMeasurement() {
-            const btn = document.getElementById('measureBtn');
-            btn.disabled = true;
+    function zoomReset() {
+        const img = document.getElementById('modalImage');
+        img.dataset.scale = 1;
+        img.style.transform = 'scale(1)';
+    }
 
-            document.getElementById('loadingBox').classList.remove('hidden');
-            document.getElementById('measurementSection').classList.add('hidden');
+    // ZOOM MEASURE
+    function mZoomIn() {
+        const img = document.getElementById('measurementImage');
+        let scale = parseFloat(img.dataset.scale || 1) + 0.2;
+        img.dataset.scale = scale;
+        img.style.transform = `scale(${scale})`;
+    }
 
-            try {
-                const response = await fetch(`/farm/${currentFarmId}/measurement`);
-                if (!response.ok) throw new Error('Server error ' + response.status);
+    function mZoomOut() {
+        const img = document.getElementById('measurementImage');
+        let scale = Math.max(1, parseFloat(img.dataset.scale || 1) - 0.2);
+        img.dataset.scale = scale;
+        img.style.transform = `scale(${scale})`;
+    }
 
-                const data = await response.json();
+    function mZoomReset() {
+        const img = document.getElementById('measurementImage');
+        img.dataset.scale = 1;
+        img.style.transform = 'scale(1)';
+    }
 
-                document.getElementById('loadingBox').classList.add('hidden');
-                document.getElementById('measurementSection').classList.remove('hidden');
-                document.getElementById('measurementImage').src = data.image;
-                measureZoom.zoomReset();
-
-                let html = '';
-                data.measurements.forEach(item => {
-                    html += `
-                        <tr class="border-t border-gray-100 hover:bg-gray-50">
-                            <td class="p-3">${item.object_name}</td>
-                            <td class="p-3">${item.length} m</td>
-                            <td class="p-3">${item.width} m</td>
-                            <td class="p-3">${item.area} m²</td>
-                        </tr>
-                    `;
-                });
-
-                document.getElementById('measurementTableBody').innerHTML = html;
-
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loadingBox').classList.add('hidden');
-                alert('Gagal memuat data pengukuran. Coba lagi.');
-                btn.disabled = false;
-            }
-        }
-
-    </script>
+</script>
 
 </body>
 </html>
