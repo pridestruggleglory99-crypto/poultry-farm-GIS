@@ -344,7 +344,7 @@ STATS
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 mt-6">
 
-```
+ 
 <!-- TITLE -->
 <div class="mb-4">
 
@@ -562,7 +562,7 @@ STATS
     </div>
 
 </div>
-```
+ 
 
 </section>
 
@@ -579,7 +579,7 @@ MENU
     sm:py-14
 ">
 
-```
+ 
 <!-- HEADING -->
 <div class="mb-8 text-center">
 
@@ -784,7 +784,7 @@ MENU
     </a>
 
 </div>
-```
+ 
 
 </section>
 
